@@ -14,6 +14,10 @@ class SudokuBoard
     init() {
         
     }
+    func CreateBoard()
+    {
+        
+    }
     func RandomBoard()
     {
         
