@@ -8,44 +8,105 @@
 
 import Foundation
 
-class SudokuBoard
+public class SudokuBoard: CustomStringConvertible
 {
-    var Board = Array(repeating: Array(repeating: 0, count: 9), count: 9)
-    init() {
-        
-    }
-    func CreateBoard()
+    //Array of cells of the board
+    public var rows: [[Cell]];
+
+    public init(boardString: String) 
     {
-        
+        let characters = Array(boardString.characters)
+        self.rows = (0..<9)
+            .map({ rowIndex in
+                return characters[rowIndex*9..<rowIndex*9+9]
+            })
+            .map({ rawRow in
+                return rawRow.map({ character in
+                    if character == "0" {
+                        return Cell.cellIsAnything()
+                    } else if let value = Int(String(character)) {
+                        return Cell.Set(value)
+                    } else {
+                        fatalError()
+                    }
+                })
+            })
     }
-    func RandomBoard()
+    //joined puts values between a nest of values
+    //Combineds the array into a board
+    public var cells: [Cell]
     {
-        
+        return Array(rows.joined())
     }
-    func CheckBoard()
+    //$0 is the first parameter passed in the closure
+    public var description: String
     {
-        
+        return self.rows.map({row in 
+        return "|" + row.map({ $0.description }).joined(separator: " ") + "|\n"
+        })
+        .joined()
     }
-    func DrawBoard()
+    //Checks if the board is solved
+    public var isSolved: Bool 
     {
-        for col in 0..<9
+        return self.cells.all({ $0.isSet})
+    }
+    //Gets the row cell array
+    public func row(forIndex index: Int) -> [Cell]
+    {
+        let rowIndex = index / 9;
+        return rows[rowIndex];
+    }
+    //Gets the column cell array
+    public func column(forIndex index: Int) -> [Cell]
+    {
+        let columnIndex = index % 9;
+        return self.rows.map({ row in
+        return row[columnIndex]
+        })
+    }
+    //Gets the cell array within a grid
+    public func smallGrid(forIndex index: Int) -> [Cell]
+    {
+        let rowIndex = index/9;
+        let columnIndex = index % 9;
+        let minigridColumnIndex = columnIndex / 3;
+        let minigridRowIndex = rowIndex / 3;
+        return (0..<3).flatMap({ rowOffset in 
+        return self.rows[minigridRowIndex * 3 + rowOffset][minigridColumnIndex * 3..<minigridColumnIndex * 3 + 3]
+        })
+    }
+    //Checks if the value is already in the row, column or minigrid. if true then it's not ok to place.
+    public func isValueAllowed(index: Int, toValue value: Int) -> Bool 
+    {
+        return !self.row(forIndex: index).contains(.Set(value))
+        && !self.column(forIndex: index).contains(.Set(value))
+        && !self.smallGrid(forIndex: index).contains(.Set(value))
+    }
+
+    public func update(index: Int, values: [Int]) throws 
+    {
+        // 
+        if values.count == 1,
+            let value = values.first,
+            !self.isValueAllowed(index: index, toValue: value) {
+            throw ConsistencyError()
+        }
+        //Sets the cell a new value
+        let newCell = Cell(values: values)
+        let rowIndex = index / 9
+        let columnIndex = index % 9
+        self.rows[rowIndex][columnIndex] = newCell
+    }
+    public func Error(index: Int) 
+    {
+        if index == 1
         {
-            for row in 0..<9
-            {
-                if (row == 3 || row == 6)
-                {
-                    print("| ", terminator:"");
-                }
-                print(Board[col][row], terminator:" ");
-            }
-            if (col == 2 || col == 5)
-            {
-                print("\n------+-------+-------");
-            }
-            else
-            {
-                print("");
-            }
+            print("Values entered are not correct")
         }
     }
+
+}
+public struct ConsistencyError: Error 
+{
 }

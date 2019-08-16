@@ -1,0 +1,12 @@
+{
+	"sfwbuild_version": "0.1",
+
+	"executable_name": "SudokuBoardTest",
+	"sources": [
+		"main.swift",
+		"SudokuBoard.swift",
+		"AI.swift",
+		"extension.swift",
+		"Cell.swift"
+	]
+}
