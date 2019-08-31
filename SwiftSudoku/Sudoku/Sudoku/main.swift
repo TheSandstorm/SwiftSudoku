@@ -18,62 +18,152 @@ func clearScreen()
         print("");
     }
 }
-
+// Creates a board. This is done by either using 81 length string or entering each value manually
 func createBoard() -> String
 {
     var boardString = "";
     while (true)
     {
-        if(boardString.count < 81)
+        print("Do you wish to enter a 81 length string or enter each value 1 by 1")
+        print("1. 81 String\n2. Enter 1 by 1")
+        let Input = readLine();
+        switch Input
         {
-            var Input = readLine()
-            var vaild = true
-            if let tempString = Input
+            case "1", "String", "string":
+            var stringMenu = true;
+            while (stringMenu)
             {
-                let characters = Array(tempString)
-                characters.forEach({character in
-                    if let value = Int(String(character))
+                print("Enter a 81 length string that contains values 0-9 where 0 is blank.\nOr just enter 'b' or 'B' to head back to the previous menu.");
+                let stringInput = readLine();
+                if let tempString = stringInput
+                {
+                    if(tempString.count < 81)
                     {
-                        
+                        if(tempString == "b" || tempString == "B")
+                        {
+                            stringMenu = false;
+                        }
+                        else
+                        {
+                            print("The String that was entered was too short. Or was not 0")
+                        }
+                    }
+                    else if(tempString.count == 81)
+                    {
+                        var vaild = true
+                        let characters = Array(tempString)
+                        characters.forEach({character in
+                            if Int(String(character)) != nil
+                            {
+                                    
+                            }
+                            else
+                            {
+                                vaild = false;
+                            }
+                        })
+                        if(vaild == true)
+                        {
+                            boardString = tempString
+                            let tempBoard = SudokuBoard(boardString: boardString);
+                            if(tempBoard.validBoard() == true)
+                            {
+                                return boardString
+                            }
+                            else
+                            {
+                                print("Input was not valid. Contains a two of the same value in the row, column or grid")
+                                boardString = ""
+                            }
+                        }
+                        else
+                        {
+                            print("Board was not vaild. Contained a letter or other char")
+                            boardString = ""
+                        }
                     }
                     else
                     {
-                        print("Not vaild board")
-                        vaild = false;
-                    }
-                })
-                if(vaild == true)
+                        print("String was too long.")
+                    } 
+                } 
+            }
+            case "2":
+            var secondInput = true;
+            boardString = "000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+            var currentIndex = 0;
+            let tempBoard = SudokuBoard(boardString: boardString)
+            while (secondInput)
+            {
+                if(currentIndex >= 81)
                 {
-                    boardString = tempString
+                    return boardString;
                 }
-                
-            }
-            else
-            {
-                print("Input was not valid")
-            }
-
+                print(tempBoard);
+                print("Current Position",currentIndex)
+                print("Enter a value that's is from 0-9 where 0 is blank.\nOr just enter b to head back to the previous menu.");
+                let stringInput = readLine();
+                if let tempString = stringInput
+                {
+                    var valid = true;
+                    if(tempString == "b" || tempString == "B")
+                    {
+                        secondInput = false;
+                    }
+                    else if(tempString.count == 1)
+                    {
+                        let characters = Array(tempString)
+                        characters.forEach({character in
+                            if Int(String(character)) != nil
+                            {
+                                    
+                            }
+                            else
+                            {
+                                valid = false;
+                            }
+                        })
+                        if(valid == true)
+                        {
+                            let characters = Array(tempString)
+                            if let value = Int(String(characters[0]))
+                            {
+                                if(tempString == "0")
+                                {
+                                    currentIndex += 1;
+                                }
+                                else if(tempBoard.isValueAllowed(index: currentIndex, toValue: value))
+                                {
+                                    let newCell = Cell(values: [value])
+                                    let rowIndex = currentIndex / 9
+                                    let columnIndex = currentIndex % 9
+                                    tempBoard.rows[rowIndex][columnIndex] = newCell
+                                    currentIndex += 1;
+                                }
+                                else
+                                {
+                                    print("Value was not allowed at that position")
+                                }
+                            }
+                        }
+                        else
+                        {
+                            print("Enter a number. Not a letter");
+                        }
+                    }
+                    else
+                    {
+                        print("Enter only 1 value");
+                    }
+                }
+            } 
+            default:
+            print("Please enter the details correctly")
         }
-        else if(boardString.count == 81)
-        {
-            let tempBoard = SudokuBoard(boardString: boardString);
-            if(tempBoard.validBoard() == true)
-            {
-                return boardString
-            }
-            else
-            {
-                print("Board was not vaild.")
-                boardString = ""
-            }
-        }
-        else
-        {
-            print("Board was too long or contained letters. Resetting board")
-            boardString = ""
-        }   
+        
     }
 }
+// Selects a premade board
 func selectBoard() -> String
 {
     print("(1) or (Easy) board")
@@ -104,10 +194,54 @@ func selectBoard() -> String
     }
 
 }
+//creates a random board.
 func randomBoard() -> String
 {
-    return ""
+    var boardString = "000000000000000000000000000000000000000000000000000000000000000000000000000000000";
+    let tempBoard = SudokuBoard(boardString: boardString);
+    if(tempBoard.randomBoard())//creates a random completed board
+    {
+        print("Random board Created\n",tempBoard);
+    }
+    var isValueNotCorrect = true;
+    var Input = 0;
+    //allows a set amount of values to be removed from the randomly created board
+    while isValueNotCorrect {
+        print("Enter a value between 1-81 to be removed")
+        guard let numberValue = readLine() else { return "" };
+        if let value = Int(String(numberValue))
+        {
+            Input = value;
+        }
+        else
+        {
+            Input = 0;
+        }
+        switch Input
+        {
+        case 1...81:
+            isValueNotCorrect = false;
+            
+        default:
+            print("Try again")
+        }
+    }
+    if(Input == 81)
+    {
+        return boardString;
+    }
+    while (Input != 0)
+    {
+        let Row = Int.random(in: 0...8);
+        let Column = Int.random(in: 0...8);
+        tempBoard.rows[Row][Column] = Cell.cellIsAnything()
+        Input -= 1;
+    }
+
+    boardString = tempBoard.stringOutput();
+    return boardString;
 }
+//Start menu of the program
 func Start() -> SudokuBoard
 {
     var boardString = "";
@@ -152,6 +286,7 @@ func Start() -> SudokuBoard
         }
     }
 }
+//Main loop
 while(true)
 {   
     if(start == true )
@@ -164,7 +299,7 @@ while(true)
     print("Do you wish to quit?")
     print("(1) or (Restart) Restart the system")
     print("(q) or (Quit) Quit")
-    var Input = readLine();
+    let Input = readLine();
     switch Input
     {
         case "1","Restart","restart":
@@ -174,6 +309,5 @@ while(true)
         default:
         clearScreen()
         print("Please enter the details correctly")
-        Input = readLine();
     }
 }

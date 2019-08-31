@@ -2,7 +2,7 @@
 //  SudokuBoard.swift
 //  Sudoku
 //
-//  Created by John Strange on 5/08/19.
+//  Created by John Strange on 5/08/19.33
 //  Copyright © 2019 John Strange. All rights reserved.
 //
 
@@ -35,6 +35,11 @@ internal class SudokuBoard: CustomStringConvertible
                     }
                 })
             })
+    }    
+    public func stringOutput() -> String
+    {
+        let string = self.rows.map({row in return row.map({$0.description}).joined()}).joined()
+        return string;
     }
     //joined puts values between a nest of values
     //Combineds the array
@@ -115,7 +120,7 @@ internal class SudokuBoard: CustomStringConvertible
             count += 1
         }
         })
-        if count > 1
+        if (count > 1)
         {
             return false
         }
@@ -131,7 +136,7 @@ internal class SudokuBoard: CustomStringConvertible
             count += 1
         }
         })
-        if count > 1
+        if (count > 1)
         {
             return false
         }
@@ -154,7 +159,7 @@ internal class SudokuBoard: CustomStringConvertible
     }
     public func Error(index: Int) 
     {
-        if index == 1
+        if (index == 1)
         {
             print("Values entered are not correct")
         }
@@ -180,6 +185,7 @@ internal class SudokuBoard: CustomStringConvertible
         })
         return valid
     }
+    //Finds the next not set cell in the grid. if there isn't one then it returns -1 to state that it's finished
     public func getNextNotSet() -> Int
     {
         for index in cells.enumerated() {
@@ -189,6 +195,33 @@ internal class SudokuBoard: CustomStringConvertible
             }
         }
         return -1
+    }
+    public func randomBoard() -> Bool
+    {
+        if(self.isSolved)
+        {
+            return true;
+        }
+        var possibleValues = [1,2,3,4,5,6,7,8,9];
+        let currentIndex = self.getNextNotSet();
+        possibleValues.shuffle();
+        for value in possibleValues
+        {
+            if (self.isValueAllowed(index: currentIndex, toValue: value))
+            {
+                let newCell = Cell(values: [value])
+                let rowIndex = currentIndex / 9
+                let columnIndex = currentIndex % 9
+                let oldCell = self.rows[rowIndex][columnIndex]
+                self.rows[rowIndex][columnIndex] = newCell
+                if (randomBoard())
+                {
+                    return true;
+                }
+                self.rows[rowIndex][columnIndex] = oldCell
+            }
+        }
+       return false;
     }
 }
 
